@@ -501,7 +501,7 @@ else:
 
     st.markdown("### 確認写真を撮影・選択")
 
-   upload_tab, camera_tab = st.tabs(
+upload_tab, camera_tab = st.tabs(
 ["🖼️ 写真を選ぶ（おすすめ）", "📷 カメラで撮る"]
 )
 
@@ -523,7 +523,7 @@ check_photo = uploaded_photo
 else:
 check_photo = camera_photo
 
-    if check_photo is not None:
+if check_photo is not None:
         st.image(
             check_photo,
             caption="今回の確認写真",
