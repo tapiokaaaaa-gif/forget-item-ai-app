@@ -524,11 +524,11 @@ else:
 check_photo = camera_photo
 
 if check_photo is not None:
-        st.image(
-            check_photo,
-            caption="今回の確認写真",
-            width=450,
-        )
+    st.image(
+        check_photo,
+        caption="今回の確認写真",
+        width=450,
+    )
 
         if st.button(
             "AIで持ち物を確認する",
