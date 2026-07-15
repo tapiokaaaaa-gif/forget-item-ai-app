@@ -502,26 +502,26 @@ else:
     st.markdown("### 確認写真を撮影・選択")
 
 upload_tab, camera_tab = st.tabs(
-["🖼️ 写真を選ぶ（おすすめ）", "📷 カメラで撮る"]
+    ["🖼️ 写真を選ぶ（おすすめ）", "📷 カメラで撮る"]
 )
 
 with upload_tab:
-uploaded_photo = st.file_uploader(
-"スマホに保存されている確認写真を選んでください",
-type=["jpg", "jpeg", "png", "webp"],
-key="check_photo_upload",
-)
+    uploaded_photo = st.file_uploader(
+        "スマホに保存されている確認写真を選んでください",
+        type=["jpg", "jpeg", "png", "webp"],
+        key="check_photo_upload",
+    )
 
 with camera_tab:
-camera_photo = st.camera_input(
-"持ち物を並べて撮影してください",
-key="check_photo_camera",
-)
+    camera_photo = st.camera_input(
+        "持ち物を並べて撮影してください",
+        key="check_photo_camera",
+    )
 
 if uploaded_photo is not None:
-check_photo = uploaded_photo
+    check_photo = uploaded_photo
 else:
-check_photo = camera_photo
+    check_photo = camera_photo
 
 if check_photo is not None:
     st.image(
