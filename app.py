@@ -530,75 +530,75 @@ if check_photo is not None:
         width=450,
     )
 
-        if st.button(
-            "AIで持ち物を確認する",
-            type="primary",
-            use_container_width=True,
-        ):
-            if len(items) > 12:
-                st.error(
-                    "一度に照合できる試作版の上限は12個です。"
-                    "持ち物を分けて確認してください。"
-                )
-            else:
-                try:
-                    with st.spinner("登録画像と照合しています…"):
-                        check_bytes = check_photo.getvalue()
-                        check_mime = mime_type_from_upload(check_photo)
+    if st.button(
+        "AIで持ち物を確認する",
+        type="primary",
+        use_container_width=True,
+    ):
+        if len(items) > 12:
+            st.error(
+                "一度に照合できる試作版の上限は12個です。"
+                "持ち物を分けて確認してください。"
+            )
+        else:
+            try:
+                with st.spinner("登録画像と照合しています…"):
+                    check_bytes = check_photo.getvalue()
+                    check_mime = mime_type_from_upload(check_photo)
 
-                        # 確認用画像を履歴としてローカル保存
-                        check_path = (
-                            CHECK_IMAGE_DIR
-                            / f"{target_date.isoformat()}_{uuid.uuid4().hex}.jpg"
+                    # 確認用画像を履歴としてローカル保存
+                    check_path = (
+                        CHECK_IMAGE_DIR
+                        / f"{target_date.isoformat()}_{uuid.uuid4().hex}.jpg"
+                    )
+                    check_path.write_bytes(check_bytes)
+
+                    result = verify_items_with_ai(
+                        check_photo_bytes=check_bytes,
+                        check_photo_mime=check_mime,
+                        items=items,
+                    )
+
+                    returned_ids = set()
+
+                    for match in result.results:
+                        returned_ids.add(match.item_id)
+
+                        # 低確信度なら、安全側に倒して未確認にする
+                        is_confirmed = (
+                            match.found and match.confidence >= 0.60
                         )
-                        check_path.write_bytes(check_bytes)
 
-                        result = verify_items_with_ai(
-                            check_photo_bytes=check_bytes,
-                            check_photo_mime=check_mime,
-                            items=items,
+                        save_check(
+                            check_date=target_date,
+                            item_id=match.item_id,
+                            confirmed=is_confirmed,
+                            confidence=match.confidence,
+                            reason=(
+                                f"{match.reason} "
+                                f"（確信度 {match.confidence:.0%}）"
+                            ),
                         )
 
-                        returned_ids = set()
-
-                        for match in result.results:
-                            returned_ids.add(match.item_id)
-
-                            # 低確信度なら、安全側に倒して未確認にする
-                            is_confirmed = (
-                                match.found and match.confidence >= 0.60
-                            )
-
+                    # AIが返さなかった物は未確認にする
+                    for item in items:
+                        if item["id"] not in returned_ids:
                             save_check(
                                 check_date=target_date,
-                                item_id=match.item_id,
-                                confirmed=is_confirmed,
-                                confidence=match.confidence,
-                                reason=(
-                                    f"{match.reason} "
-                                    f"（確信度 {match.confidence:.0%}）"
-                                ),
+                                item_id=item["id"],
+                                confirmed=False,
+                                confidence=0,
+                                reason="AIから判定結果が返りませんでした",
                             )
 
-                        # AIが返さなかった物は未確認にする
-                        for item in items:
-                            if item["id"] not in returned_ids:
-                                save_check(
-                                    check_date=target_date,
-                                    item_id=item["id"],
-                                    confirmed=False,
-                                    confidence=0,
-                                    reason="AIから判定結果が返りませんでした",
-                                )
+                st.success("確認が完了しました。")
+                st.rerun()
 
-                    st.success("確認が完了しました。")
-                    st.rerun()
-
-                except Exception as error:
-                    st.error(f"AI判定に失敗しました：{error}")
-                    st.info(
-                        "APIキー、インターネット接続、モデル名を確認してください。"
-                    )
+            except Exception as error:
+                st.error(f"AI判定に失敗しました：{error}")
+                st.info(
+                    "APIキー、インターネット接続、モデル名を確認してください。"
+                )
 
     st.markdown("### 判定結果")
     st.caption(
